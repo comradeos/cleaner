@@ -1,78 +1,126 @@
 // Package internal цей файл відповідає за набір цілей очищення для macOS
 package internal
 
+const (
+	userLogsPath              = "~/Library/Logs"
+	systemLogsPath            = "/Library/Logs"
+	diagnosticReportsDir      = "DiagnosticReports"
+	userDiagnosticReportsPath = userLogsPath + "/" + diagnosticReportsDir
+	systemDiagnosticReports   = systemLogsPath + "/" + diagnosticReportsDir
+
+	googleChromeCachePath  = "~/Library/Caches/Google/Chrome"
+	chromeCanaryCachePath  = "~/Library/Caches/Google/Chrome Canary"
+	chromiumCachePath      = "~/Library/Caches/Chromium"
+	braveBrowserCachePath  = "~/Library/Caches/BraveSoftware/Brave-Browser"
+	microsoftEdgeCachePath = "~/Library/Caches/Microsoft Edge"
+	firefoxCachePath       = "~/Library/Caches/Firefox"
+
+	xcodeDerivedDataPath = "~/Library/Developer/Xcode/DerivedData"
+	homebrewCachePath    = "~/Library/Caches/Homebrew"
+
+	npmCachePath        = "~/.npm"
+	yarnCachePath       = "~/Library/Caches/Yarn"
+	pnpmCachePath       = "~/Library/Caches/pnpm"
+	pnpmStorePath       = "~/Library/pnpm/store"
+	pipCachePath        = "~/.cache/pip"
+	pipLibraryCachePath = "~/Library/Caches/pip"
+	cargoRegistryPath   = "~/.cargo/registry/cache"
+	cargoGitDBPath      = "~/.cargo/git/db"
+	goBuildCachePath    = "~/Library/Caches/go-build"
+	goModuleCachePath   = "~/go/pkg/mod/cache"
+)
+
 // Повертає список цілей для macOS
 func macOSTargets() []Target {
 	return []Target{
 		{
-			ID:   1,
-			Name: "System and User Logs",
-			Paths: []PathSpec{
-				{
-					Pattern:       "~/Library/Logs",
-					ClearContents: true,
-					ExcludeBaseNames: map[string]struct{}{
-						"DiagnosticReports": {},
-					},
-				},
-				{
-					Pattern:       "/Library/Logs",
-					ClearContents: true,
-					ExcludeBaseNames: map[string]struct{}{
-						"DiagnosticReports": {},
-					},
-				},
-			},
+			ID:    1,
+			Name:  "System and User Logs",
+			Paths: clearPathsWithExcludedNames([]string{userLogsPath, systemLogsPath}, diagnosticReportsDir),
 		},
 		{
-			ID:   2,
-			Name: "Crash Reports and Diagnostic Reports",
-			Paths: []PathSpec{
-				{Pattern: "~/Library/Logs/DiagnosticReports", ClearContents: true},
-				{Pattern: "/Library/Logs/DiagnosticReports", ClearContents: true},
-			},
+			ID:    2,
+			Name:  "Crash Reports and Diagnostic Reports",
+			Paths: clearPaths(userDiagnosticReportsPath, systemDiagnosticReports),
 		},
 		{
 			ID:   3,
 			Name: "Browser Caches",
-			Paths: []PathSpec{
-				{Pattern: "~/Library/Caches/Google/Chrome", ClearContents: true},
-				{Pattern: "~/Library/Caches/Google/Chrome Canary", ClearContents: true},
-				{Pattern: "~/Library/Caches/Chromium", ClearContents: true},
-				{Pattern: "~/Library/Caches/BraveSoftware/Brave-Browser", ClearContents: true},
-				{Pattern: "~/Library/Caches/Microsoft Edge", ClearContents: true},
-				{Pattern: "~/Library/Caches/Firefox", ClearContents: true},
-			},
+			Paths: clearPaths(
+				googleChromeCachePath,
+				chromeCanaryCachePath,
+				chromiumCachePath,
+				braveBrowserCachePath,
+				microsoftEdgeCachePath,
+				firefoxCachePath,
+			),
 		},
 		{
-			ID:   4,
-			Name: "Xcode Derived Data",
-			Paths: []PathSpec{
-				{Pattern: "~/Library/Developer/Xcode/DerivedData", ClearContents: true},
-			},
+			ID:    4,
+			Name:  "Xcode Derived Data",
+			Paths: clearPaths(xcodeDerivedDataPath),
 		},
 		{
-			ID:   5,
-			Name: "Homebrew Cache",
-			Paths: []PathSpec{
-				{Pattern: "~/Library/Caches/Homebrew", ClearContents: true},
-			},
+			ID:    5,
+			Name:  "Homebrew Cache",
+			Paths: clearPaths(homebrewCachePath),
 		},
 		{
 			ID:   6,
 			Name: "Package Manager Caches",
-			Paths: []PathSpec{
-				{Pattern: "~/.npm", ClearContents: true},
-				{Pattern: "~/Library/Caches/Yarn", ClearContents: true},
-				{Pattern: "~/Library/Caches/pnpm", ClearContents: true},
-				{Pattern: "~/Library/pnpm/store", ClearContents: true},
-				{Pattern: "~/.cache/pip", ClearContents: true},
-				{Pattern: "~/Library/Caches/pip", ClearContents: true},
-				{Pattern: "~/.cargo/registry/cache", ClearContents: true},
-				{Pattern: "~/.cargo/git/db", ClearContents: true},
-				{Pattern: "~/Library/Caches/go-build", ClearContents: true},
-				{Pattern: "~/go/pkg/mod/cache", ClearContents: true},
-			},
+			Paths: clearPaths(
+				npmCachePath,
+				yarnCachePath,
+				pnpmCachePath,
+				pnpmStorePath,
+				pipCachePath,
+				pipLibraryCachePath,
+				cargoRegistryPath,
+				cargoGitDBPath,
+				goBuildCachePath,
+				goModuleCachePath,
+			),
 		},
 	}
+}
+
+// Створює список шляхів для очищення
+func clearPaths(patterns ...string) []PathSpec {
+	paths := make([]PathSpec, 0, len(patterns))
+
+	for _, pattern := range patterns {
+		paths = append(paths, PathSpec{
+			Pattern:       pattern,
+			ClearContents: true,
+		})
+	}
+
+	return paths
+}
+
+// Створює список шляхів з виключенням за назвами
+func clearPathsWithExcludedNames(patterns []string, excludedNames ...string) []PathSpec {
+	paths := make([]PathSpec, 0, len(patterns))
+	excluded := newNameSet(excludedNames...)
+
+	for _, pattern := range patterns {
+		paths = append(paths, PathSpec{
+			Pattern:          pattern,
+			ClearContents:    true,
+			ExcludeBaseNames: excluded,
+		})
+	}
+
+	return paths
+}
+
+// Створює набір назв для виключення
+func newNameSet(names ...string) map[string]struct{} {
+	values := make(map[string]struct{}, len(names))
+
+	for _, name := range names {
+		values[name] = struct{}{}
+	}
+
+	return values
 }

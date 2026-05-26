@@ -29,7 +29,7 @@ Options:
 
 type idList []int
 
-// повертає список id як рядок
+// Повертає список id як рядок
 func (ids *idList) String() string {
 	if len(*ids) == 0 {
 		return ""
@@ -63,7 +63,7 @@ func (ids *idList) Set(value string) error {
 	return nil
 }
 
-// запускає cli та повертає код завершення
+// Run запускає cli та повертає код завершення
 func Run(args []string, stdout, stderr io.Writer) int {
 	if len(args) == 0 {
 		printUsage(stdout)
@@ -102,7 +102,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 	}
 }
 
-// виконує команду очищення
+// Виконує команду очищення
 func runClean(args []string, stdout, stderr io.Writer, platformName string, cleaner *Cleaner) int {
 	flags := flag.NewFlagSet("clean", flag.ContinueOnError)
 	flags.SetOutput(stderr)
@@ -174,12 +174,12 @@ func runClean(args []string, stdout, stderr io.Writer, platformName string, clea
 	return 0
 }
 
-// виводить довідку по використанню
+// Виводить довідку з використання
 func printUsage(w io.Writer) {
 	_, _ = fmt.Fprint(w, usageText)
 }
 
-// виводить результати сканування
+// Виводить результати сканування
 func printScan(w io.Writer, platformName string, results []TargetResult) {
 	_, _ = fmt.Fprintf(w, "%s scan results\n\n", platformName)
 
@@ -198,7 +198,7 @@ func printScan(w io.Writer, platformName string, results []TargetResult) {
 	printWarnings(w, results)
 }
 
-// виводить вибрані цілі перед очищенням
+// Виводить вибрані цілі перед очищенням
 func printSelection(w io.Writer, platformName string, results []TargetResult) {
 	_, _ = fmt.Fprintf(w, "%s cleanup targets\n\n", platformName)
 
@@ -216,7 +216,7 @@ func printSelection(w io.Writer, platformName string, results []TargetResult) {
 	_, _ = fmt.Fprintf(w, "\nEstimated reclaimable size: %s\n", HumanSize(total))
 }
 
-// виводить результати очищення
+// Виводить результати очищення
 func printCleanResults(w io.Writer, platformName string, results []TargetResult) {
 	_, _ = fmt.Fprintf(w, "%s cleanup completed\n\n", platformName)
 
@@ -235,19 +235,22 @@ func printCleanResults(w io.Writer, platformName string, results []TargetResult)
 	printWarnings(w, results)
 }
 
-// виводить попередження
+// Виводить попередження
 func printWarnings(w io.Writer, results []TargetResult) {
 	var generalWarnings []string
+
 	permissionRestricted := false
 
 	for _, result := range results {
 		permissionCount := 0
+
 		for _, warning := range result.Warnings {
 			if isPermissionWarning(warning) {
 				permissionCount++
 				permissionRestricted = true
 				continue
 			}
+
 			generalWarnings = append(generalWarnings, warning)
 		}
 
@@ -263,7 +266,9 @@ func printWarnings(w io.Writer, results []TargetResult) {
 	}
 
 	sort.Strings(generalWarnings)
+
 	_, _ = fmt.Fprintln(w, "\nWarnings:")
+
 	for _, warning := range generalWarnings {
 		_, _ = fmt.Fprintf(w, "- %s\n", warning)
 	}
@@ -273,7 +278,7 @@ func printWarnings(w io.Writer, results []TargetResult) {
 	}
 }
 
-// відбирає результати за id
+// Відбирає результати за id
 func filterSelected(results []TargetResult, cleanAll bool, ids []int) []TargetResult {
 	if cleanAll {
 		return results
@@ -281,15 +286,18 @@ func filterSelected(results []TargetResult, cleanAll bool, ids []int) []TargetRe
 
 	selected := make([]TargetResult, 0, len(ids))
 	index := make(map[int]TargetResult, len(results))
+
 	for _, result := range results {
 		index[result.ID] = result
 	}
 
 	seen := make(map[int]struct{}, len(ids))
+
 	for _, id := range ids {
 		if _, ok := seen[id]; ok {
 			continue
 		}
+
 		if result, ok := index[id]; ok {
 			selected = append(selected, result)
 			seen[id] = struct{}{}
@@ -299,27 +307,33 @@ func filterSelected(results []TargetResult, cleanAll bool, ids []int) []TargetRe
 	sort.Slice(selected, func(i, j int) bool {
 		return selected[i].ID < selected[j].ID
 	})
+
 	return selected
 }
 
-// перевіряє що всі id існують
+// Перевіряє що всі id існують
 func validateIDs(targets []Target, ids []int) error {
 	if len(ids) == 0 {
 		return nil
 	}
 
 	known := make(map[int]struct{}, len(targets))
+
 	for _, target := range targets {
 		known[target.ID] = struct{}{}
 	}
 
 	var invalid []string
+
 	seen := make(map[int]struct{}, len(ids))
+
 	for _, id := range ids {
 		if _, ok := seen[id]; ok {
 			continue
 		}
+
 		seen[id] = struct{}{}
+
 		if _, ok := known[id]; !ok {
 			invalid = append(invalid, fmt.Sprintf("%d", id))
 		}
@@ -333,22 +347,24 @@ func validateIDs(targets []Target, ids []int) error {
 	return fmt.Errorf("unknown target id(s): %s", strings.Join(invalid, ", "))
 }
 
-// перевіряє чи були помилки під час очищення
+// Перевіряє чи були помилки під час очищення
 func hasCleanupFailures(results []TargetResult) bool {
 	for _, result := range results {
 		if result.Status == "partial" || result.Status == "failed" {
 			return true
 		}
 	}
+
 	return false
 }
 
-// запитує підтвердження на видалення
+// Запитує підтвердження на видалення
 func promptConfirmation(w io.Writer) (bool, error) {
 	_, _ = fmt.Fprint(w, "Type YES to permanently delete the selected files: ")
 
 	reader := bufio.NewReader(os.Stdin)
 	input, err := reader.ReadString('\n')
+
 	if err != nil && !errors.Is(err, io.EOF) {
 		return false, err
 	}
@@ -356,7 +372,7 @@ func promptConfirmation(w io.Writer) (bool, error) {
 	return strings.TrimSpace(input) == "YES", nil
 }
 
-// визначає чи попередження повязане з доступом
+// Визначає чи попередження пов'язане з доступом
 func isPermissionWarning(warning string) bool {
 	lower := strings.ToLower(warning)
 	return strings.Contains(lower, "operation not permitted") || strings.Contains(lower, "permission denied")
