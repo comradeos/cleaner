@@ -89,6 +89,10 @@ func clearPaths(patterns ...string) []PathSpec {
 	paths := make([]PathSpec, 0, len(patterns))
 
 	for _, pattern := range patterns {
+		if pattern == "" {
+			continue
+		}
+
 		paths = append(paths, PathSpec{
 			Pattern:       pattern,
 			ClearContents: true,
@@ -104,6 +108,10 @@ func clearPathsWithExcludedNames(patterns []string, excludedNames ...string) []P
 	excluded := newNameSet(excludedNames...)
 
 	for _, pattern := range patterns {
+		if pattern == "" {
+			continue
+		}
+
 		paths = append(paths, PathSpec{
 			Pattern:          pattern,
 			ClearContents:    true,

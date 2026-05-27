@@ -1,4 +1,4 @@
-// Package internal цей файл відповідає за моделі сканування та очищення файлової системи
+// цей файл відповідає за моделі сканування та очищення файлової системи
 package internal
 
 import (
@@ -46,7 +46,7 @@ type Cleaner struct {
 	targets []Target
 }
 
-// NewCleaner створює новий екземпляр cleaner
+// Створює новий екземпляр cleaner
 func NewCleaner(homeDir string, targets []Target) *Cleaner {
 	return &Cleaner{
 		homeDir: homeDir,
@@ -54,14 +54,14 @@ func NewCleaner(homeDir string, targets []Target) *Cleaner {
 	}
 }
 
-// Targets повертає список цілей очищення
+// Повертає список цілей очищення
 func (c *Cleaner) Targets() []Target {
 	out := make([]Target, len(c.targets))
 	copy(out, c.targets)
 	return out
 }
 
-// ScanAll сканує всі доступні цілі
+// Сканує всі доступні цілі
 func (c *Cleaner) ScanAll() []TargetResult {
 	results := make([]TargetResult, 0, len(c.targets))
 
@@ -72,7 +72,7 @@ func (c *Cleaner) ScanAll() []TargetResult {
 	return results
 }
 
-// ScanTarget сканує одну ціль
+// Сканує одну ціль
 func (c *Cleaner) ScanTarget(target Target) TargetResult {
 	result := TargetResult{
 		ID:   target.ID,
@@ -102,7 +102,7 @@ func (c *Cleaner) ScanTarget(target Target) TargetResult {
 	return result
 }
 
-// CleanByIDs очищає вибрані цілі за id
+// Очищає вибрані цілі за id
 func (c *Cleaner) CleanByIDs(ids []int) ([]TargetResult, error) {
 	if len(ids) == 0 {
 		return nil, errors.New("at least one --id value is required")
@@ -134,7 +134,7 @@ func (c *Cleaner) CleanByIDs(ids []int) ([]TargetResult, error) {
 	return c.cleanTargets(selected), nil
 }
 
-// CleanAll очищає всі цілі
+// Очищає всі цілі
 func (c *Cleaner) CleanAll() []TargetResult {
 	return c.cleanTargets(c.targets)
 }
@@ -244,7 +244,7 @@ func (c *Cleaner) resolveMatches(spec PathSpec) ([]string, []string) {
 	return existing, nil
 }
 
-// HumanSize перетворює байти у зручний формат
+// Перетворює байти у зручний формат
 func HumanSize(size int64) string {
 	const unit = 1024
 
@@ -427,6 +427,25 @@ func expandHome(path, homeDir string) string {
 	}
 
 	return path
+}
+
+// Збирає шлях з частин
+func filepathJoin(parts ...string) string {
+	filtered := make([]string, 0, len(parts))
+
+	for _, part := range parts {
+		if part == "" {
+			continue
+		}
+
+		filtered = append(filtered, part)
+	}
+
+	if len(filtered) == 0 {
+		return ""
+	}
+
+	return filepath.Join(filtered...)
 }
 
 // Перевіряє чи містить шлях glob символи

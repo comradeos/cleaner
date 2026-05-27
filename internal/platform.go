@@ -1,4 +1,4 @@
-// Package internal цей файл відповідає за вибір цілей для поточної операційної системи
+// цей файл відповідає за вибір цілей для поточної операційної системи
 package internal
 
 import (
@@ -6,15 +6,15 @@ import (
 	"runtime"
 )
 
-// TargetsForCurrentOS повертає цілі для поточної системи
+// повертає цілі для поточної системи
 func TargetsForCurrentOS() ([]Target, string, error) {
 	switch runtime.GOOS {
 	case "darwin":
 		return macOSTargets(), "macOS", nil
 	case "linux":
-		return nil, "Linux", fmt.Errorf("linux support is not implemented yet")
+		return linuxTargets(), "Linux", nil
 	case "windows":
-		return nil, "Windows", fmt.Errorf("windows support is not implemented yet")
+		return windowsTargets(), "Windows", nil
 	default:
 		return nil, runtime.GOOS, fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
 	}

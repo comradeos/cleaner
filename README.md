@@ -4,14 +4,15 @@ A free and open-source terminal utility for scanning, detecting, and removing un
 
 ## Current scope
 
-The first version focuses on `macOS` and safely scans only known disposable targets:
+The current version supports `macOS`, `Linux`, and `Windows`.
 
-- `System and User Logs`
-- `Crash Reports and Diagnostic Reports`
-- `Browser Caches` (cache only)
-- `Xcode Derived Data`
-- `Homebrew Cache`
-- `Package Manager Caches`
+Safe targets vary by platform and include:
+
+- `System or user logs`
+- `Crash reports and diagnostic reports`
+- `Browser caches` (cache only)
+- `Developer and package manager caches`
+- `User trash` and thumbnail caches where they are safely accessible
 
 The cleaner does not use `sudo` by default and only removes files from an explicit whitelist of locations.
 Protected macOS locations that typically require `Full Disk Access`, such as `Trash` and Safari cache folders, are intentionally excluded in this version.
