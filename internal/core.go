@@ -11,6 +11,7 @@ import (
 	"strings"
 )
 
+// Описує правила для шляху очищення
 type PathSpec struct {
 	Pattern             string
 	ClearContents       bool
@@ -18,12 +19,14 @@ type PathSpec struct {
 	ExcludeBasePrefixes []string
 }
 
+// Описує ціль очищення
 type Target struct {
 	ID    int
 	Name  string
 	Paths []PathSpec
 }
 
+// Описує результат сканування або очищення
 type TargetResult struct {
 	ID             int
 	Name           string
@@ -37,6 +40,7 @@ type TargetResult struct {
 	Warnings       []string
 }
 
+// Зберігає стан cleaner
 type Cleaner struct {
 	homeDir string
 	targets []Target
@@ -357,6 +361,7 @@ func treeSize(root string) (int64, error) {
 	return total, errors.Join(errs...)
 }
 
+// Описує статистику очищення
 type CleanupStats struct {
 	DeletedEntries int
 	FailedEntries  int
@@ -458,12 +463,15 @@ func warningsFromError(path string, err error) []string {
 	}
 
 	var multi multiUnwrapper
+
 	if errors.As(err, &multi) {
 		unwrapped := multi.Unwrap()
 		warnings := make([]string, 0, len(unwrapped))
+
 		for _, item := range unwrapped {
 			warnings = append(warnings, warningsFromError(path, item)...)
 		}
+
 		return warnings
 	}
 

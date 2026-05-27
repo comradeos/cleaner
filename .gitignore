@@ -1,13 +1,12 @@
-.gocache/
-build/
+.gocache
+build
 .DS_Store
 cleaner
-bin/
 *.out
 *.test
 *.tmp
 *.log
 *.swp
 *.swo
-.idea/
-.vscode/
+.idea
+.vscode

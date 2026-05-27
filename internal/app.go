@@ -136,6 +136,7 @@ func runClean(args []string, stdout, stderr io.Writer, platformName string, clea
 
 	scanned := cleaner.ScanAll()
 	selected := filterSelected(scanned, cleanAll, ids)
+
 	if len(selected) == 0 {
 		_, _ = fmt.Fprintln(stderr, "no matching targets found")
 		return 1
@@ -145,10 +146,12 @@ func runClean(args []string, stdout, stderr io.Writer, platformName string, clea
 
 	if !yes {
 		confirmed, err := promptConfirmation(stdout)
+
 		if err != nil {
 			_, _ = fmt.Fprintf(stderr, "failed to read confirmation: %v\n", err)
 			return 1
 		}
+
 		if !confirmed {
 			_, _ = fmt.Fprintln(stdout, "Cleanup cancelled.")
 			return 0
@@ -157,10 +160,12 @@ func runClean(args []string, stdout, stderr io.Writer, platformName string, clea
 
 	var results []TargetResult
 	var err error
+
 	if cleanAll {
 		results = cleaner.CleanAll()
 	} else {
 		results, err = cleaner.CleanByIDs(ids)
+
 		if err != nil {
 			_, _ = fmt.Fprintln(stderr, err)
 			return 1
@@ -168,9 +173,11 @@ func runClean(args []string, stdout, stderr io.Writer, platformName string, clea
 	}
 
 	printCleanResults(stdout, platformName, results)
+
 	if hasCleanupFailures(results) {
 		return 2
 	}
+
 	return 0
 }
 
@@ -188,6 +195,7 @@ func printScan(w io.Writer, platformName string, results []TargetResult) {
 	_, _ = fmt.Fprintln(tw, "--\t----\t----\t-------------")
 
 	var total int64
+
 	for _, result := range results {
 		total += result.SizeBytes
 		_, _ = fmt.Fprintf(tw, "%d\t%s\t%s\t%d\n", result.ID, result.Name, result.HumanSize, result.MatchedPath)
@@ -195,6 +203,7 @@ func printScan(w io.Writer, platformName string, results []TargetResult) {
 	_ = tw.Flush()
 
 	_, _ = fmt.Fprintf(w, "\nTotal reclaimable size: %s\n", HumanSize(total))
+
 	printWarnings(w, results)
 }
 
@@ -207,10 +216,12 @@ func printSelection(w io.Writer, platformName string, results []TargetResult) {
 	_, _ = fmt.Fprintln(tw, "--\t----\t----")
 
 	var total int64
+
 	for _, result := range results {
 		total += result.SizeBytes
 		_, _ = fmt.Fprintf(tw, "%d\t%s\t%s\n", result.ID, result.Name, result.HumanSize)
 	}
+
 	_ = tw.Flush()
 
 	_, _ = fmt.Fprintf(w, "\nEstimated reclaimable size: %s\n", HumanSize(total))
@@ -225,6 +236,7 @@ func printCleanResults(w io.Writer, platformName string, results []TargetResult)
 	_, _ = fmt.Fprintln(tw, "--\t----\t--------------\t------")
 
 	var total int64
+
 	for _, result := range results {
 		total += result.SizeBytes
 		_, _ = fmt.Fprintf(tw, "%d\t%s\t%s\t%s\n", result.ID, result.Name, result.HumanSize, result.Status)
@@ -232,6 +244,7 @@ func printCleanResults(w io.Writer, platformName string, results []TargetResult)
 	_ = tw.Flush()
 
 	_, _ = fmt.Fprintf(w, "\nEstimated requested cleanup size: %s\n", HumanSize(total))
+
 	printWarnings(w, results)
 }
 
