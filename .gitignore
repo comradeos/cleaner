@@ -10,3 +10,7 @@ cleaner
 *.swo
 .idea
 .vscode
+*.exe
+*.dll
+*.so
+*.dylib
